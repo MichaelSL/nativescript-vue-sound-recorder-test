@@ -38,9 +38,11 @@
     import { alert } from "tns-core-modules/ui/dialogs";
     import { RecorderService } from "../services/recorder-service";
     import { requestPermission, hasPermission } from "nativescript-permissions";
+    import { setInterval, clearInterval } from "tns-core-modules/timer";
 
     declare var android;
     const recorderService = new RecorderService();
+    let timerId;
 
     export default {
         methods: {
@@ -67,12 +69,14 @@
                 let recorder = recorderService.getRecorder(true);
                 console.log(`audioFolder: ${audioFolder}`);
                 if(!TNSRecorder.CAN_RECORD()){
-                    this.msg = "Asking for MIC permisison";
-                    recorder.requestRecordPermission();
+                    this.msg = "No MIC detected";
+                    return;
                 } else{
-                    this.msg = "Ready to REC";
+                    this.msg = "MIC detected";
                 }
 
+                let amps = this.amplitudes;
+                amps = new Array<number>();
                 await recorder.start({
                     filename: path.normalize(audioFolder),
                     metering: true,
@@ -81,14 +85,20 @@
                     },
                     errorCallback: function(recorder: any, error: number, extra: number) {
                         console.log('errorCallback');
-                        alert('Error recording.');
                     }
+                }).then(v => {
+                    timerId = setInterval(() =>{
+                        let currentMeters = recorder.getMeters();
+                        amps.push(currentMeters);
+                        console.log(amps.join(","))
+                    }, 200);
                 });
             },
             onStopRecording: async () => {
                 let recorder = recorderService.getRecorder(true);
                 await recorder.stop();
                 this.msg = "Recording stopped";
+                clearInterval(timerId);
             },
             onWriteFile: async () => {
                 const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
@@ -107,7 +117,8 @@
         },
         data() {
             return {
-                msg: "Hello!"
+                msg: "Hello!",
+                amplitudes: new Array<number>()
             }
         },
         created(){
