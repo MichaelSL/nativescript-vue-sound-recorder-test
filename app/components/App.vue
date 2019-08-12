@@ -42,7 +42,6 @@
 
     declare var android;
     const recorderService = new RecorderService();
-    let timerId;
 
     export default {
         methods: {
@@ -66,39 +65,14 @@
 
                 }
 
-                let recorder = recorderService.getRecorder(true);
                 console.log(`audioFolder: ${audioFolder}`);
-                if(!TNSRecorder.CAN_RECORD()){
-                    this.msg = "No MIC detected";
-                    return;
-                } else{
-                    this.msg = "MIC detected";
-                }
-
-                let amps = this.amplitudes;
-                amps = new Array<number>();
-                await recorder.start({
-                    filename: path.normalize(audioFolder),
-                    metering: true,
-                    infoCallback: function(recorder: any, info: number, extra: number) {
-                        console.log(`infoCallback: ${info} => ${extra}`);
-                    },
-                    errorCallback: function(recorder: any, error: number, extra: number) {
-                        console.log('errorCallback');
-                    }
-                }).then(v => {
-                    timerId = setInterval(() =>{
-                        let currentMeters = recorder.getMeters();
-                        amps.push(currentMeters);
-                        console.log(amps.join(","))
-                    }, 200);
-                });
+                await recorderService.startRecording(path.normalize(audioFolder));
             },
             onStopRecording: async () => {
-                let recorder = recorderService.getRecorder(true);
-                await recorder.stop();
+                await recorderService.stopRecording();
                 this.msg = "Recording stopped";
-                clearInterval(timerId);
+                const amps = recorderService.getAmplitudes();
+                console.log(amps);
             },
             onWriteFile: async () => {
                 const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
@@ -117,11 +91,17 @@
         },
         data() {
             return {
-                msg: "Hello!",
-                amplitudes: new Array<number>()
+                msg: "Hello!"
             }
         },
         created(){
+            if(!TNSRecorder.CAN_RECORD()){
+                this.msg = "No MIC detected";
+                return;
+            } else{
+                this.msg = "MIC detected";
+            }
+
             const haveWritePermission = hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
             const haveMicPermission = hasPermission(android.Manifest.permission.RECORD_AUDIO);
             const message = `WRITE: ${haveWritePermission}; REC: ${haveMicPermission}`;
