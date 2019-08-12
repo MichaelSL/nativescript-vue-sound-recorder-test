@@ -36,32 +36,11 @@
     import { knownFolders, Folder, File, path } from "tns-core-modules/file-system";
     import { isAndroid } from "tns-core-modules/platform";
     import { alert } from "tns-core-modules/ui/dialogs";
+    import { RecorderService } from "../services/recorder-service";
+    import { requestPermission, hasPermission } from "nativescript-permissions";
 
     declare var android;
-
-    let getFileAndRecorder = () => {
-        let audioFolder = knownFolders.currentApp().getFolder("audio-test").path;
-        let fileName = "/test-record";
-
-        if (isAndroid) {
-            fileName += ".mp3";
-            const permissions = require("nativescript-permissions");
-            
-            permissions.requestPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, "I need these permissions because I'm cool")
-                .then(() => {
-                    audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);
-                });
-        }
-
-        const recorder = new TNSRecorder();
-        recorder.debug = true;
-        if(!TNSRecorder.CAN_RECORD()){
-            this.msg = "Asking for MIC permisison";
-            recorder.requestRecordPermission();
-        } else{
-            this.msg = "Ready to REC";
-        }
-    };
+    const recorderService = new RecorderService();
 
     export default {
         methods: {
@@ -69,18 +48,24 @@
                 let audioFolder = knownFolders.currentApp().getFolder("audio-test").path;
                 let fileName = "/test-record";
 
+                console.log(`=========> Android: ${isAndroid}`);
                 if (isAndroid) {
                     fileName += ".mp3";
-                    const permissions = require("nativescript-permissions");
                     
-                    permissions.requestPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, "I need these permissions because I'm cool")
-                        .then(() => {
-                            audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);
-                        });
+                    try{
+                        if (!hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+                            const permissionResult = await requestPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, "We need to store recorded files somewhere.");
+                        }
+                    } catch {
+                        console.log("Permission request failed");
+                    }
+                    audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);
+                } else {
+
                 }
 
-                const recorder = new TNSRecorder();
-                recorder.debug = true;
+                let recorder = recorderService.getRecorder(true);
+                console.log(`audioFolder: ${audioFolder}`);
                 if(!TNSRecorder.CAN_RECORD()){
                     this.msg = "Asking for MIC permisison";
                     recorder.requestRecordPermission();
@@ -101,35 +86,13 @@
                 });
             },
             onStopRecording: async () => {
-                let audioFolder = knownFolders.currentApp().getFolder("audio-test").path;
-                let fileName = "/test-record";
-
-                if (isAndroid) {
-                    fileName += ".mp3";
-                    const permissions = require("nativescript-permissions");
-                    
-                    await permissions.requestPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, "I need these permissions because I'm cool");
-                    audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);                        
-                }
-
-                const recorder = new TNSRecorder();
-                recorder.debug = true;
-                if(!TNSRecorder.CAN_RECORD()){
-                    this.msg = "Asking for MIC permisison";
-                    recorder.requestRecordPermission();
-                } else{
-                    this.msg = "Ready to REC";
-                }
-
+                let recorder = recorderService.getRecorder(true);
                 await recorder.stop();
-                const audioFile = File.fromPath(path.normalize(audioFolder));
-                const binarySource = audioFile.readSync((err) => {
-                    console.log(err);
-                });
-                console.log(binarySource);
+                this.msg = "Recording stopped";
             },
             onWriteFile: async () => {
-                const fileToWrite = path.normalize(knownFolders.currentApp() + "test-file.txt");
+                const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
+                console.log(fileToWrite);
                 const file = File.fromPath(fileToWrite);
 
                 try{
@@ -146,6 +109,13 @@
             return {
                 msg: "Hello!"
             }
+        },
+        created(){
+            const haveWritePermission = hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            const haveMicPermission = hasPermission(android.Manifest.permission.RECORD_AUDIO);
+            const message = `WRITE: ${haveWritePermission}; REC: ${haveMicPermission}`;
+            console.log(message);
+            this.msg = message;
         }
     }
 </script>
