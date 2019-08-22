@@ -2,9 +2,9 @@
     <Page>
         <ActionBar title="Sound recorder test app" android:flat="true"/>
         <TabView android:tabBackgroundColor="#53ba82"
-                 android:tabTextColor="#c4ffdf"
-                 android:selectedTabTextColor="#ffffff"
-                 androidSelectedTabHighlightColor="#ffffff">
+                android:tabTextColor="#c4ffdf"
+                android:selectedTabTextColor="#ffffff"
+                androidSelectedTabHighlightColor="#ffffff">
             <TabViewItem title="Tab 1">
                 <GridLayout columns="*" rows="*">
                     <StackLayout col="0" row="0">
@@ -12,6 +12,12 @@
                         <Button text="Start recording" @tap="onStartRecording"/>
                         <Button text="Stop recording" @tap="onStopRecording"/>
                     </StackLayout>
+                    <RadCartesianChart row="1">
+                        <LineSeries v-tkCartesianSeries :items="favoriteFruits"
+                            categoryProperty="type" valueProperty="count" />
+                        <CategoricalAxis v-tkCartesianHorizontalAxis />
+                        <LinearAxis v-tkCartesianVerticalAxis />
+                    </RadCartesianChart>
                 </GridLayout>
             </TabViewItem>
             <TabViewItem title="Tab 2">
@@ -19,11 +25,6 @@
                     <StackLayout col="0" row="0">
                         <Button text="Write file" @tap="onWriteFile"/>
                     </StackLayout>
-                </GridLayout>
-            </TabViewItem>
-            <TabViewItem title="Tab 3">
-                <GridLayout columns="*" rows="*">
-                    <Label class="message" text="Tab 3 Content" col="0" row="0"/>
                 </GridLayout>
             </TabViewItem>
         </TabView>
@@ -38,8 +39,10 @@
     import { alert } from "tns-core-modules/ui/dialogs";
     import { RecorderService } from "../services/recorder-service";
     import { requestPermission, hasPermission } from "nativescript-permissions";
+    import RadChart from 'nativescript-ui-chart/vue';
     import { setInterval, clearInterval } from "tns-core-modules/timer";
 
+    //Vue.use(RadChart);
     declare var android;
     const recorderService = new RecorderService();
 
