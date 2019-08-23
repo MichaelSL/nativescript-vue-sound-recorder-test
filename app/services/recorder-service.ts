@@ -5,6 +5,7 @@ export class RecorderService{
     private _recorder: TNSRecorder;
     private _timerId: any;
     private _amplitudes: Array<number> = [];
+    private _isRecording: boolean = false;
 
     private resetMeters(){
         if (this._timerId){
@@ -38,6 +39,7 @@ export class RecorderService{
                 console.log('errorCallback');
             }
         }).then(v => {
+            this._isRecording = true;
             this.resetMeters();
 
             this._timerId = setInterval(() =>{
@@ -48,6 +50,9 @@ export class RecorderService{
     }
 
     public stopRecording(): Promise<any>{
+        if (!this._isRecording){
+            return Promise.resolve();
+        }
         const recorder = this.getRecorder(true);
         clearInterval(this._timerId);
         return recorder.stop();

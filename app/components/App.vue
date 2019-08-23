@@ -11,13 +11,13 @@
                         <Label class="message" :text="msg"/>
                         <Button text="Start recording" @tap="onStartRecording"/>
                         <Button text="Stop recording" @tap="onStopRecording"/>
+                        <RadCartesianChart col="0" row="1" allowAnmation="true">
+                            <LineSeries v-tkCartesianSeries :items="amps"
+                                categoryProperty="index" valueProperty="amp" />
+                            <CategoricalAxis v-tkCartesianHorizontalAxis />
+                            <LinearAxis v-tkCartesianVerticalAxis />
+                        </RadCartesianChart>
                     </StackLayout>
-                    <RadCartesianChart row="1">
-                        <LineSeries v-tkCartesianSeries :items="favoriteFruits"
-                            categoryProperty="type" valueProperty="count" />
-                        <CategoricalAxis v-tkCartesianHorizontalAxis />
-                        <LinearAxis v-tkCartesianVerticalAxis />
-                    </RadCartesianChart>
                 </GridLayout>
             </TabViewItem>
             <TabViewItem title="Tab 2">
@@ -40,15 +40,16 @@
     import { RecorderService } from "../services/recorder-service";
     import { requestPermission, hasPermission } from "nativescript-permissions";
     import RadChart from 'nativescript-ui-chart/vue';
+    import Vue from 'nativescript-vue';
     import { setInterval, clearInterval } from "tns-core-modules/timer";
 
-    //Vue.use(RadChart);
+    Vue.use(RadChart);
     declare var android;
     const recorderService = new RecorderService();
 
     export default {
         methods: {
-            onStartRecording: async () => {
+            onStartRecording: async function() {
                 let audioFolder = knownFolders.currentApp().getFolder("audio-test").path;
                 let fileName = "/test-record";
 
@@ -64,20 +65,25 @@
                         console.log("Permission request failed");
                     }
                     audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);
+                    this.msg = `Recording to ${audioFolder}`;
                 } else {
-
+                    this.msg = `iOS - no recording yet`;
                 }
 
                 console.log(`audioFolder: ${audioFolder}`);
                 await recorderService.startRecording(path.normalize(audioFolder));
             },
-            onStopRecording: async () => {
-                await recorderService.stopRecording();
+            onStopRecording: async function() {
                 this.msg = "Recording stopped";
-                const amps = recorderService.getAmplitudes();
-                console.log(amps);
+
+                await recorderService.stopRecording();
+                const amps = recorderService
+                    .getAmplitudes()
+                    .map((v,i) => { return { index: i, amp: v}});
+
+                this.amps = amps;
             },
-            onWriteFile: async () => {
+            onWriteFile: async function() {
                 const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
                 console.log(fileToWrite);
                 const file = File.fromPath(fileToWrite);
@@ -94,7 +100,8 @@
         },
         data() {
             return {
-                msg: "Hello!"
+                msg: "",
+                amps: []
             }
         },
         created(){
