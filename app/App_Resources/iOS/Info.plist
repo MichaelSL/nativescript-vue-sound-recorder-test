@@ -44,6 +44,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Recording Practice Sessions</string>
+	<string>The Audio Recorder needs to access your Microphone to record.</string>
 </dict>
 </plist>
