@@ -11,7 +11,7 @@
                         <Label class="message" :text="msg"/>
                         <Button text="Start recording" @tap="onStartRecording"/>
                         <Button text="Stop recording" @tap="onStopRecording"/>
-                        <RadCartesianChart col="0" row="1" allowAnmation="true">
+                        <RadCartesianChart allowAnmation="true" style="height: 100%;">
                             <LineSeries v-tkCartesianSeries :items="amps"
                                 categoryProperty="index" valueProperty="amp" />
                             <CategoricalAxis v-tkCartesianHorizontalAxis />
@@ -115,11 +115,15 @@
                 this.msg = "MIC detected";
             }
 
-            const haveWritePermission = hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            const haveMicPermission = hasPermission(android.Manifest.permission.RECORD_AUDIO);
-            const message = `WRITE: ${haveWritePermission}; REC: ${haveMicPermission}`;
-            console.log(message);
-            this.msg = message;
+            if (isAndroid){
+                const haveWritePermission = hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                const haveMicPermission = hasPermission(android.Manifest.permission.RECORD_AUDIO);
+                const message = `WRITE: ${haveWritePermission}; REC: ${haveMicPermission}`;
+                console.log(message);
+                this.msg = message;
+            } else if (isIOS) {
+                this.msg = "Starting on iOS";
+            }
         }
     }
 </script>
