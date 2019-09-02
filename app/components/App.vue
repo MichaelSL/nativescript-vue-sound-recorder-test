@@ -11,7 +11,7 @@
                         <Label class="message" :text="msg"/>
                         <Button text="Start recording" @tap="onStartRecording"/>
                         <Button text="Stop recording" @tap="onStopRecording"/>
-                        <RadCartesianChart col="0" row="1" allowAnmation="true">
+                        <RadCartesianChart allowAnmation="true" style="height: 100%;">
                             <LineSeries v-tkCartesianSeries :items="amps"
                                 categoryProperty="index" valueProperty="amp" />
                             <CategoricalAxis v-tkCartesianHorizontalAxis />
@@ -35,7 +35,7 @@
     import { TNSPlayer, TNSRecorder, AudioRecorderOptions } from 'nativescript-audio';
     import { error } from 'util';
     import { knownFolders, Folder, File, path } from "tns-core-modules/file-system";
-    import { isAndroid } from "tns-core-modules/platform";
+    import { isAndroid, isIOS } from "tns-core-modules/platform";
     import { alert } from "tns-core-modules/ui/dialogs";
     import { RecorderService } from "../services/recorder-service";
     import { requestPermission, hasPermission } from "nativescript-permissions";
@@ -44,13 +44,13 @@
     import { setInterval, clearInterval } from "tns-core-modules/timer";
 
     Vue.use(RadChart);
-    declare var android;
+    //declare var android;
     const recorderService = new RecorderService();
 
     export default {
         methods: {
             onStartRecording: async function() {
-                let audioFolder = knownFolders.currentApp().getFolder("audio-test").path;
+                let audioFolder = knownFolders.currentApp().getFolder("audio").path;
                 let fileName = "/test-record";
 
                 console.log(`=========> Android: ${isAndroid}`);
@@ -66,8 +66,11 @@
                     }
                     audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);
                     this.msg = `Recording to ${audioFolder}`;
-                } else {
-                    this.msg = `iOS - no recording yet`;
+                } else  if (isIOS) {
+                    this.msg = `iOS - new recording`;
+                    fileName += ".caf";
+                    
+                    audioFolder = path.join(audioFolder, fileName);
                 }
 
                 console.log(`audioFolder: ${audioFolder}`);
@@ -112,11 +115,15 @@
                 this.msg = "MIC detected";
             }
 
-            const haveWritePermission = hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            const haveMicPermission = hasPermission(android.Manifest.permission.RECORD_AUDIO);
-            const message = `WRITE: ${haveWritePermission}; REC: ${haveMicPermission}`;
-            console.log(message);
-            this.msg = message;
+            if (isAndroid){
+                const haveWritePermission = hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                const haveMicPermission = hasPermission(android.Manifest.permission.RECORD_AUDIO);
+                const message = `WRITE: ${haveWritePermission}; REC: ${haveMicPermission}`;
+                console.log(message);
+                this.msg = message;
+            } else if (isIOS) {
+                this.msg = "Starting on iOS";
+            }
         }
     }
 </script>
