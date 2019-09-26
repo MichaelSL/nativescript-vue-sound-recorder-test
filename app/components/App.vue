@@ -44,7 +44,7 @@
     import { setInterval, clearInterval } from "tns-core-modules/timer";
 
     Vue.use(RadChart);
-    //declare var android;
+    declare var android;
     const recorderService = new RecorderService();
 
     export default {
