@@ -6,11 +6,11 @@
   "license": "MIT",
   "nativescript": {
     "id": "org.michaelsamorokov.nssoundrecordertest",
-    "tns-ios": {
-      "version": "6.0.1"
-    },
     "tns-android": {
-      "version": "6.0.0"
+      "version": "6.1.2"
+    },
+    "tns-ios": {
+      "version": "6.1.1"
     }
   },
   "dependencies": {
@@ -23,7 +23,7 @@
     "nativescript-ui-chart": "^6.0.0",
     "nativescript-vue": "^2.0.0",
     "nativescript-vue-devtools": "^1.2.0",
-    "tns-core-modules": "6.0.1"
+    "tns-core-modules": "^6.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -36,13 +36,13 @@
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^1.0.0",
     "lazy": "1.0.11",
-    "nativescript-dev-webpack": "1.0.1",
+    "nativescript-dev-webpack": "~1.2.0",
     "nativescript-vue-template-compiler": "^2.0.0",
     "nativescript-worker-loader": "~0.9.0",
     "node-sass": "^4.9.2",
     "sass-loader": "^7.1.0",
     "terser-webpack-plugin": "^1.1.0",
-    "tns-platform-declarations": "6.0.1",
+    "tns-platform-declarations": "^6.1.1",
     "typescript": "^3.2.4",
     "vue": "^2.5.22",
     "vue-loader": "^15.2.6",

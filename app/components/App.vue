@@ -44,13 +44,13 @@
     import { setInterval, clearInterval } from "tns-core-modules/timer";
 
     Vue.use(RadChart);
-    //declare var android;
+    declare var android;
     const recorderService = new RecorderService();
 
     export default {
         methods: {
             onStartRecording: async function() {
-                let audioFolder = knownFolders.currentApp().getFolder("audio").path;
+                let audioFolder = knownFolders.temp().getFolder("audio").path;
                 let fileName = "/test-record";
 
                 console.log(`=========> Android: ${isAndroid}`);
