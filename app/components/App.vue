@@ -5,7 +5,7 @@
                 android:tabTextColor="#c4ffdf"
                 android:selectedTabTextColor="#ffffff"
                 androidSelectedTabHighlightColor="#ffffff">
-            <TabViewItem title="Tab 1">
+            <TabViewItem title="Recording">
                 <GridLayout columns="*" rows="*">
                     <StackLayout col="0" row="0">
                         <Label class="message" :text="msg"/>
@@ -20,7 +20,7 @@
                     </StackLayout>
                 </GridLayout>
             </TabViewItem>
-            <TabViewItem title="Tab 2">
+            <TabViewItem title="Options">
                 <GridLayout columns="*" rows="*">
                     <StackLayout col="0" row="0">
                         <Button text="Write file" @tap="onWriteFile"/>
