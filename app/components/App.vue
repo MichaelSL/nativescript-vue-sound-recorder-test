@@ -14,7 +14,7 @@
                         <RadCartesianChart allowAnmation="true" style="height: 100%;">
                             <LineSeries v-tkCartesianSeries :items="amps"
                                 categoryProperty="index" valueProperty="amp" />
-                            <CategoricalAxis v-tkCartesianHorizontalAxis />
+                            <CategoricalAxis v-tkCartesianHorizontalAxis majorTickInterval="50" />
                             <LinearAxis v-tkCartesianVerticalAxis />
                         </RadCartesianChart>
                     </StackLayout>
@@ -45,6 +45,8 @@
 
     Vue.use(RadChart);
     declare var android;
+    const SAMPLING_INTERVAL = 200;
+    const SAMPLES_PER_SECOND = 1000 / SAMPLING_INTERVAL;
     const recorderService = new RecorderService();
 
     export default {
@@ -65,7 +67,7 @@
                 }
 
                 console.log(`audioFolder: ${audioFolder}`);
-                await recorderService.startRecording(path.normalize(audioFolder));
+                await recorderService.startRecording(path.normalize(audioFolder), SAMPLING_INTERVAL);
             },
             onStopRecording: async function() {
                 this.msg = "Recording stopped";
@@ -76,16 +78,16 @@
                 if (isAndroid){
                     amps = recorderService
                         .getNormalizedAmplitudes()
-                        .map((v,i) => { return { index: i, amp: v}});
+                        .map((v,i) => { return { index: i / SAMPLES_PER_SECOND, amp: v}});
                 } else if (isIOS){
                     amps = recorderService
                         .getAmplitudes()
-                        .map((v,i) => { return { index: i, amp: v}});
+                        .map((v,i) => { return { index: i / SAMPLES_PER_SECOND, amp: v}});
                 } else{
                     //default OS - no adjustment
                     amps = recorderService
                         .getAmplitudes()
-                        .map((v,i) => { return { index: i, amp: v}});
+                        .map((v,i) => { return { index: i / SAMPLES_PER_SECOND, amp: v}});
                 }
                 
 

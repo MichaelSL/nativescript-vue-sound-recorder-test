@@ -26,7 +26,7 @@ export class RecorderService{
         return this._recorder;
     }
 
-    public startRecording(filename: string): Promise<any>{
+    public startRecording(filename: string, samplingInterval: number): Promise<any>{
         const recorder = this.getRecorder(true);
 
         return recorder.start({
@@ -45,7 +45,7 @@ export class RecorderService{
             this._timerId = setInterval(() =>{
                 let amp = recorder.getMeters();
                 this._amplitudes.push(amp);
-            }, 200);
+            }, samplingInterval);
         });
     }
 
