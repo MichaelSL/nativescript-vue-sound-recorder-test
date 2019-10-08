@@ -55,21 +55,12 @@
 
                 console.log(`=========> Android: ${isAndroid}`);
                 if (isAndroid) {
+                    this.msg = `A - recording to ${audioFolder}`;
                     fileName += ".mp3";
-                    
-                    try{
-                        if (!hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-                            const permissionResult = await requestPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, "We need to store recorded files somewhere.");
-                        }
-                    } catch {
-                        console.log("Permission request failed");
-                    }
-                    audioFolder = path.join(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), fileName);
-                    this.msg = `Recording to ${audioFolder}`;
+                    audioFolder = path.join(audioFolder, fileName);
                 } else  if (isIOS) {
-                    this.msg = `iOS - new recording`;
+                    this.msg = `iOS - recording to ${audioFolder}`;
                     fileName += ".caf";
-                    
                     audioFolder = path.join(audioFolder, fileName);
                 }
 
