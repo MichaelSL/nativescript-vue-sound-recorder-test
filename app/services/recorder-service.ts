@@ -49,6 +49,11 @@ export class RecorderService{
         });
     }
 
+    private getAndroidNoiseLevel(amp: number, maxAmp: number): number {
+        const dbLevel = 20 * Math.log10(amp / maxAmp);
+        return dbLevel;
+    }
+
     public stopRecording(): Promise<any>{
         if (!this._isRecording){
             return Promise.resolve();
@@ -60,5 +65,13 @@ export class RecorderService{
 
     public getAmplitudes(): Array<number>{
         return this._amplitudes;
+    }
+
+    public getNormalizedAmplitudes(): Array<number>{
+        return this._amplitudes.map((val, _, arr) => {
+            return this.getAndroidNoiseLevel(val, arr.reduce((prev, curr) => {
+                return (curr > prev) ? curr : prev;
+            }));
+        });
     }
 }

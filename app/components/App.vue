@@ -80,9 +80,23 @@
                 this.msg = "Recording stopped";
 
                 await recorderService.stopRecording();
-                const amps = recorderService
-                    .getAmplitudes()
-                    .map((v,i) => { return { index: i, amp: v}});
+                let amps = null;
+                
+                if (isAndroid){
+                    amps = recorderService
+                        .getNormalizedAmplitudes()
+                        .map((v,i) => { return { index: i, amp: v}});
+                } else if (isIOS){
+                    amps = recorderService
+                        .getAmplitudes()
+                        .map((v,i) => { return { index: i, amp: v}});
+                } else{
+                    //default OS - no adjustment
+                    amps = recorderService
+                        .getAmplitudes()
+                        .map((v,i) => { return { index: i, amp: v}});
+                }
+                
 
                 this.amps = amps;
             },
