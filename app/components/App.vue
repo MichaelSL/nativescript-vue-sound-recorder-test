@@ -32,16 +32,17 @@
 </template>
 
 <script lang="ts">
-    import { TNSPlayer, TNSRecorder, AudioRecorderOptions } from 'nativescript-audio';
-    import { error } from 'util';
+    import { TNSPlayer, TNSRecorder, AudioRecorderOptions } from "nativescript-audio";
+    import { error } from "util";
     import { knownFolders, Folder, File, path } from "tns-core-modules/file-system";
     import { isAndroid, isIOS } from "tns-core-modules/platform";
     import { alert } from "tns-core-modules/ui/dialogs";
     import { RecorderService } from "../services/recorder-service";
     import { requestPermission, hasPermission } from "nativescript-permissions";
-    import RadChart from 'nativescript-ui-chart/vue';
-    import Vue from 'nativescript-vue';
+    import RadChart from "nativescript-ui-chart/vue";
+    import Vue from "nativescript-vue";
     import { setInterval, clearInterval } from "tns-core-modules/timer";
+    import * as Geolocation from "nativescript-geolocation";
 
     Vue.use(RadChart);
     declare var android;
@@ -49,25 +50,41 @@
     const SAMPLES_PER_SECOND = 1000 / SAMPLING_INTERVAL;
     const recorderService = new RecorderService();
 
+    let location: Promise<Geolocation.Location>;
+
+    async function RecordFile() {
+        let audioFolder = knownFolders.temp().getFolder("audio").path;
+        let fileName = "/test-record";
+        console.log(`=========> Android: ${isAndroid}`);
+        if(isAndroid) {
+            fileName += ".mp3";
+            audioFolder = path.join(audioFolder,fileName);
+        }
+        else if(isIOS) {
+            fileName += ".caf";
+            audioFolder = path.join(audioFolder,fileName);
+        }
+        console.log(`audioFolder: ${audioFolder}`);
+        return await recorderService.startRecording(path.normalize(audioFolder),SAMPLING_INTERVAL);
+    }
+
     export default {
         methods: {
             onStartRecording: async function() {
-                let audioFolder = knownFolders.temp().getFolder("audio").path;
-                let fileName = "/test-record";
 
-                console.log(`=========> Android: ${isAndroid}`);
-                if (isAndroid) {
-                    this.msg = `A - recording to ${audioFolder}`;
-                    fileName += ".mp3";
-                    audioFolder = path.join(audioFolder, fileName);
-                } else  if (isIOS) {
-                    this.msg = `iOS - recording to ${audioFolder}`;
-                    fileName += ".caf";
-                    audioFolder = path.join(audioFolder, fileName);
-                }
+                Geolocation.enableLocationRequest(true)
+                    .then(() => {
+                        Geolocation.isEnabled().then(async isLocationEnabled => {
+                            console.log("Result is " + isLocationEnabled);
+                            if(!isLocationEnabled) {
+                                this.msg = "Location is disabled on a device.";
+                                return;
+                            }
 
-                console.log(`audioFolder: ${audioFolder}`);
-                await recorderService.startRecording(path.normalize(audioFolder), SAMPLING_INTERVAL);
+                            location = Geolocation.getCurrentLocation({});
+                            await RecordFile();
+                        });
+                    });
             },
             onStopRecording: async function() {
                 await recorderService.stopRecording();
@@ -90,12 +107,24 @@
                 
 
                 this.amps = amps;
-                const recordingData = {
-                    timestamp: new Date().toISOString(),
-                    amps: amps
-                };
-                console.log(recordingData);
-                this.msg = `Rec stopped: ${recordingData.timestamp}`;
+
+                location
+                    .then(result => {
+                        //console.log("loc result", result);
+                        
+                        const recordingData = {
+                            timestamp: new Date().toISOString(),
+                            amps: amps,
+                            location: result
+                        };
+                        //console.log(recordingData);
+                        this.msg = `Location data aquired. Data ready to send.`;
+                    })
+                    .catch(e => {
+                        console.log("loc error", e);
+                    });
+
+                this.msg = `Rec stopped - waiting for location`;
             },
             onWriteFile: async function() {
                 const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
