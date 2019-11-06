@@ -70,8 +70,6 @@
                 await recorderService.startRecording(path.normalize(audioFolder), SAMPLING_INTERVAL);
             },
             onStopRecording: async function() {
-                this.msg = "Recording stopped";
-
                 await recorderService.stopRecording();
                 let amps = null;
                 
@@ -92,6 +90,12 @@
                 
 
                 this.amps = amps;
+                const recordingData = {
+                    timestamp: new Date().toISOString(),
+                    amps: amps
+                };
+                console.log(recordingData);
+                this.msg = `Rec stopped: ${recordingData.timestamp}`;
             },
             onWriteFile: async function() {
                 const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
