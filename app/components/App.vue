@@ -23,7 +23,7 @@
             <TabViewItem title="Options">
                 <GridLayout columns="*" rows="*">
                     <StackLayout col="0" row="0">
-                        <Button text="Write file" @tap="onWriteFile"/>
+                        <Label class="message" text="Current settings will go here"/>
                     </StackLayout>
                 </GridLayout>
             </TabViewItem>
@@ -123,20 +123,6 @@
                     });
 
                 this.msg = `Rec stopped - waiting for location`;
-            },
-            onWriteFile: async function() {
-                const fileToWrite = path.normalize(knownFolders.currentApp().getFolder("text-test").path + "test-file.txt");
-                console.log(fileToWrite);
-                const file = File.fromPath(fileToWrite);
-
-                try{
-                    await file.writeText("foo bar");
-
-                    let text = await file.readText();
-                    console.log(text);
-                } catch (error){
-                    console.log(error);
-                }
             }
         },
         data() {
