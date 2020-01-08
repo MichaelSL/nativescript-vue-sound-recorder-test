@@ -45,5 +45,9 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>The Audio Recorder needs to access your Microphone to record.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>The Audio Recorder needs to access your location to understand where sound level was registered.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>The Audio Recorder needs to access your location to understand where sound level was registered.</string>
 </dict>
 </plist>
