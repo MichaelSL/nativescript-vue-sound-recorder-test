@@ -43,6 +43,8 @@
     import Vue from "nativescript-vue";
     import { setInterval, clearInterval } from "tns-core-modules/timer";
     import * as Geolocation from "nativescript-geolocation";
+    import { IndexedAmplitude } from "../models/indexed-amplitude";
+    import { RecordingData } from "../models/recording-data";
 
     Vue.use(RadChart);
     declare var android;
@@ -72,37 +74,35 @@
         methods: {
             onStartRecording: async function() {
 
-                Geolocation.enableLocationRequest(true)
-                    .then(() => {
-                        Geolocation.isEnabled().then(async isLocationEnabled => {
-                            console.log("Result is " + isLocationEnabled);
-                            if(!isLocationEnabled) {
-                                this.msg = "Location is disabled on a device.";
-                                return;
-                            }
-
-                            location = Geolocation.getCurrentLocation({});
-                            await RecordFile();
-                        });
-                    });
+                await Geolocation.enableLocationRequest(true);
+                if (await Geolocation.isEnabled()){
+                    console.log("Location is enabled");
+                    location = Geolocation.getCurrentLocation({});
+                    this.msg = 'Recording...';
+                    this.amps = [];
+                    await RecordFile();
+                } else{
+                    this.msg = "Location is disabled on a device.";
+                    return;
+                }
             },
             onStopRecording: async function() {
                 await recorderService.stopRecording();
-                let amps = null;
+                let amps : Array<IndexedAmplitude> = null;
                 
                 if (isAndroid){
                     amps = recorderService
                         .getNormalizedAmplitudes()
-                        .map((v,i) => { return { index: i / SAMPLES_PER_SECOND, amp: v}});
+                        .map((v,i) => { return new IndexedAmplitude({ index: i / SAMPLES_PER_SECOND, amp: v})});
                 } else if (isIOS){
                     amps = recorderService
                         .getAmplitudes()
-                        .map((v,i) => { return { index: i / SAMPLES_PER_SECOND, amp: v}});
+                        .map((v,i) => { return new IndexedAmplitude({ index: i / SAMPLES_PER_SECOND, amp: v})});
                 } else{
                     //default OS - no adjustment
                     amps = recorderService
                         .getAmplitudes()
-                        .map((v,i) => { return { index: i / SAMPLES_PER_SECOND, amp: v}});
+                        .map((v,i) => { return new IndexedAmplitude({ index: i / SAMPLES_PER_SECOND, amp: v})});
                 }
                 
 
@@ -110,14 +110,12 @@
 
                 location
                     .then(result => {
-                        //console.log("loc result", result);
-                        
-                        const recordingData = {
+                        const recordingData = new RecordingData({
                             timestamp: new Date().toISOString(),
                             amps: amps,
                             location: result
-                        };
-                        //console.log(recordingData);
+                        });
+
                         this.msg = `Location data aquired. Data ready to send.`;
                     })
                     .catch(e => {
